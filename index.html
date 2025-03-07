@@ -10,6 +10,7 @@
         .top-section { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 50vh; }
         .date { font-size: 5vmin; font-weight: bold; margin-bottom: 1vmin; text-shadow: 2px 2px 5px rgba(0, 255, 0, 0.7); color: lime; }
         .digital-clock { font-size: 20vmin; font-weight: bold; text-shadow: 5px 5px 10px rgba(255, 255, 0, 0.5); }
+        .period-display { font-size: 8vmin; margin-top: 1vmin; color: white; }
         .bottom-section { display: flex; align-items: flex-start; justify-content: flex-start; padding: 2vmin; height: 50vh; font-size: 3vmin; white-space: pre-line; text-align: left; overflow-y: auto; width: 100%; }
         .top-right-controls { position: absolute; top: 10px; right: 10px; }
         button { font-size: 1.5vmin; padding: 0.5vmin; cursor: pointer; }
@@ -24,6 +25,7 @@
     <div class="top-section">
         <div class="date" id="date-display"></div>
         <div class="digital-clock" id="digital-clock"></div>
+        <div class="period-display" id="period-display"></div>
     </div>
 
     <div class="bottom-section" id="message-display"></div>
@@ -35,6 +37,7 @@
         function toggleManualMode() {
             manualMode = !manualMode;
             document.getElementById('manual-time').style.display = manualMode ? 'inline' : 'none';
+            document.getElementById('date-display').style.display = manualMode ? 'none' : 'block';
         }
 
         function updateManualTime() {
@@ -47,7 +50,7 @@
 
         function getCurrentTime() {
             if (manualMode && manualTime) {
-                return new Date(2025, 0, 1, manualTime.hours, manualTime.minutes, 0); // 固定日付（必要に応じ変更可）
+                return new Date(2025, 0, 1, manualTime.hours, manualTime.minutes, 0);
             } else {
                 return new Date();
             }
@@ -55,20 +58,11 @@
 
         function updateClock() {
             const now = getCurrentTime();
-            const year = now.getFullYear();
-            const month = now.getMonth() + 1;
-            const date = now.getDate();
-            const dayNames = ["日", "月", "火", "水", "木", "金", "土"];
-            const day = dayNames[now.getDay()];
             const hours = now.getHours();
             const minutes = now.getMinutes();
-            const seconds = now.getSeconds();
-
-            document.getElementById("date-display").textContent =
-                `${year}年 ${month.toString().padStart(2, '0')}月 ${date.toString().padStart(2, '0')}日 (${day}曜日)`;
 
             document.getElementById("digital-clock").textContent =
-                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
 
             updateMessage(hours, minutes);
         }
@@ -87,7 +81,8 @@
 
             const cTimes = [
                 { start: 9 * 60, end: 9 * 60 + 35 },
-                { start: 10 * 60 + 5, end: 10 * 60 + 40 }
+                { start: 10 * 60 + 5, end: 10 * 60 + 40 },
+                { start: 11 * 60 + 10, end: 11 * 60 + 45 }
             ];
 
             let message = '';
@@ -95,6 +90,8 @@
             if (bTimes.some(period => time >= period.start && time < period.end)) {
                 message = `
 対応B
+◯1年英語・2年英語・3年英語演習で実施されるリスニング試験について
+→音声を戻しての受験はできません。
 ◯出欠席について
 →中等部は受験するしないにかかわらず, 遅刻となります.
 →高等部は受験すれば遅刻. 受験しなければ欠課となります.
@@ -110,9 +107,6 @@
 ◯学期内に行われる試験が期末1回の科目の場合
 →中等部は評価1. (3学期は1学期と2学期の評価から算定)
 →高等部は未評価扱いで追試対象.
-→実技点を算入する科目については, 上記以外の評価がつく場合があります.
-◯5年英語表現演習IIの場合
-→授業および実技点から評価を算定します. (評価がよくなることはありません)
                 `;
             }
 
