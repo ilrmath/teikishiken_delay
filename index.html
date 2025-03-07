@@ -58,13 +58,46 @@
 
         function updateClock() {
             const now = getCurrentTime();
+            const year = now.getFullYear();
+            const month = now.getMonth() + 1;
+            const date = now.getDate();
+            const dayNames = ["日", "月", "火", "水", "木", "金", "土"];
+            const day = dayNames[now.getDay()];
             const hours = now.getHours();
             const minutes = now.getMinutes();
+            const seconds = now.getSeconds();
+
+            if (!manualMode) {
+                document.getElementById("date-display").textContent =
+                    `${year}年 ${month.toString().padStart(2, '0')}月 ${date.toString().padStart(2, '0')}日 (${day}曜日)`;
+            }
 
             document.getElementById("digital-clock").textContent =
-                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 
+            updatePeriodDisplay(hours, minutes);
             updateMessage(hours, minutes);
+        }
+
+        function updatePeriodDisplay(hours, minutes) {
+            const periodDisplay = document.getElementById('period-display');
+            const time = hours * 60 + minutes;
+
+            const periods = [
+                { start: 8 * 60 + 45, end: 9 * 60 + 35, text: "1時限目試験中" },
+                { start: 9 * 60 + 50, end: 10 * 60 + 45, text: "2時限目試験中" },
+                { start: 10 * 60 + 55, end: 11 * 60 + 45, text: "3時限目試験中" },
+                { start: 12 * 60 + 35, end: 13 * 60 + 25, text: "4時限目試験中" }
+            ];
+
+            const period = periods.find(p => time >= p.start && time < p.end);
+
+            if (period) {
+                const remainingMinutes = period.end - time;
+                periodDisplay.textContent = `${period.text} (あと${remainingMinutes}分)`;
+            } else {
+                periodDisplay.textContent = '';
+            }
         }
 
         function updateMessage(hours, minutes) {
@@ -76,13 +109,13 @@
             const bTimes = [
                 { start: 8 * 60 + 45, end: 9 * 60 },
                 { start: 9 * 60 + 50, end: 10 * 60 + 5 },
-                { start: 10 * 60 + 55, end: 11 * 60 + 10 }
+                { start: 10 * 60 + 55, end: 11 * 60 + 10 }  // 10:55〜11:10 対応B
             ];
 
             const cTimes = [
                 { start: 9 * 60, end: 9 * 60 + 35 },
                 { start: 10 * 60 + 5, end: 10 * 60 + 40 },
-                { start: 11 * 60 + 10, end: 11 * 60 + 45 }
+                { start: 11 * 60 + 10, end: 11 * 60 + 45 }  // 11:10〜11:45 対応C
             ];
 
             let message = '';
