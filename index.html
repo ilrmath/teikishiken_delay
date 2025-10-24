@@ -1,127 +1,136 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>デジタル時計</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { display: flex; flex-direction: column; justify-content: space-between; height: 100vh; background: black; color: yellow; font-family: Arial, sans-serif; }
-        .top-section { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 50vh; }
-        .date { font-size: 5vmin; font-weight: bold; margin-bottom: 1vmin; text-shadow: 2px 2px 5px rgba(0, 255, 0, 0.7); color: lime; }
-        .digital-clock { font-size: 20vmin; font-weight: bold; text-shadow: 5px 5px 10px rgba(255, 255, 0, 0.5); }
-        .period-display { font-size: 8vmin; margin-top: 1vmin; color: white; }
-        .bottom-section { display: flex; align-items: flex-start; justify-content: flex-start; padding: 2vmin; height: 50vh; font-size: 3vmin; white-space: pre-line; text-align: left; overflow-y: auto; width: 100%; }
-        .top-right-controls { position: absolute; top: 10px; right: 10px; }
-        button { font-size: 1.5vmin; padding: 0.5vmin; cursor: pointer; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>デジタル時計＋天気（品川区）</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { display: flex; flex-direction: column; justify-content: space-between; height: 100vh; background: #000; color: #ff0; font-family: Arial, sans-serif; }
+    .top-section { display: grid; grid-template-rows: auto auto auto auto; align-content: start; justify-items: center; height: 50vh; position: relative; padding-top: calc(max(1.2vmin, env(safe-area-inset-top))); padding-inline: clamp(2vmin, 3vw, 4vmin); row-gap: 1vmin; width: 100%; overflow: visible; }
+
+    .weather { justify-self: start; margin-left: 0; font-size: clamp(2.6vmin, 3.2vw, 3.6vmin); color: #bde0ff; text-shadow: 1px 1px 3px rgba(0, 150, 255, 0.5); white-space: pre-line; max-width: 100%; overflow-wrap: anywhere; word-break: break-word; line-height: 1.2; }
+
+    .date { font-size: clamp(4vmin, 4.5vw, 5vmin); font-weight: bold; margin-bottom: 1vmin; text-shadow: 2px 2px 5px rgba(0, 255, 0, 0.7); color: lime; width: 100%; text-align: center; overflow: hidden; text-overflow: ellipsis; }
+    .digital-clock { font-size: min(22vmin, 34vh); line-height: 0.85; font-weight: bold; text-shadow: 5px 5px 10px rgba(255, 255, 0, 0.5); width: 100%; text-align: center; }
+    .period-display { font-size: 7.5vmin; margin-top: 0.5vmin; color: white; width: 100%; text-align: center; line-height: 1.05; }
+
+    .bottom-section { display: flex; align-items: flex-start; justify-content: flex-start; padding: 2vmin; height: 50vh; font-size: 3vmin; white-space: pre-line; text-align: left; overflow-y: auto; width: 100%; }
+
+    .top-right-controls { position: absolute; top: 10px; right: 10px; }
+    button { font-size: 1.5vmin; padding: 0.5vmin; cursor: pointer; }
+    input[type="time"] { font-size: 1.6vmin; }
+  </style>
 </head>
 <body>
-    <div class="top-right-controls">
-        <button onclick="toggleManualMode()">手動モード切替</button>
-        <input type="time" id="manual-time" style="display: none;" onchange="updateManualTime()">
-    </div>
+  <div class="top-right-controls">
+    <button onclick="toggleManualMode()">手動モード切替</button>
+    <input type="time" id="manual-time" style="display: none;" onchange="updateManualTime()">
+  </div>
 
-    <div class="top-section">
-        <div class="date" id="date-display"></div>
-        <div class="digital-clock" id="digital-clock"></div>
-        <div class="period-display" id="period-display"></div>
-    </div>
+  <div class="top-section">
+    <div class="weather" id="weather-display">天気を取得中…</div>
+    <div class="date" id="date-display"></div>
+    <div class="digital-clock" id="digital-clock"></div>
+    <div class="period-display" id="period-display"></div>
+  </div>
 
-    <div class="bottom-section" id="message-display"></div>
+  <div class="bottom-section" id="message-display"></div>
 
-    <script>
-        let manualMode = false;
-        let manualTime = null;
+  <script>
+    // ====== 手動モード ======
+    let manualMode = false;
+    let manualTime = null;
 
-        function toggleManualMode() {
-            manualMode = !manualMode;
-            document.getElementById('manual-time').style.display = manualMode ? 'inline' : 'none';
-            document.getElementById('date-display').style.display = manualMode ? 'none' : 'block';
-        }
+    function toggleManualMode() {
+      manualMode = !manualMode;
+      document.getElementById('manual-time').style.display = manualMode ? 'inline' : 'none';
+      document.getElementById('date-display').style.display = manualMode ? 'none' : 'block';
+    }
 
-        function updateManualTime() {
-            const input = document.getElementById('manual-time').value;
-            if (input) {
-                const [hours, minutes] = input.split(':').map(Number);
-                manualTime = { hours, minutes };
-            }
-        }
+    function updateManualTime() {
+      const input = document.getElementById('manual-time').value;
+      if (input) {
+        const [hours, minutes] = input.split(':').map(Number);
+        manualTime = { hours, minutes };
+      }
+    }
 
-        function getCurrentTime() {
-            if (manualMode && manualTime) {
-                return new Date(2025, 0, 1, manualTime.hours, manualTime.minutes, 0);
-            } else {
-                return new Date();
-            }
-        }
+    function getCurrentTime() {
+      if (manualMode && manualTime) {
+        return new Date(2025, 0, 1, manualTime.hours, manualTime.minutes, 0);
+      } else {
+        return new Date();
+      }
+    }
 
-        function updateClock() {
-            const now = getCurrentTime();
-            const year = now.getFullYear();
-            const month = now.getMonth() + 1;
-            const date = now.getDate();
-            const dayNames = ["日", "月", "火", "水", "木", "金", "土"];
-            const day = dayNames[now.getDay()];
-            const hours = now.getHours();
-            const minutes = now.getMinutes();
-            const seconds = now.getSeconds();
+    // ====== 時計描画 ======
+    function updateClock() {
+      const now = getCurrentTime();
+      const year = now.getFullYear();
+      const month = now.getMonth() + 1;
+      const date = now.getDate();
+      const dayNames = ["日", "月", "火", "水", "木", "金", "土"];
+      const day = dayNames[now.getDay()];
+      const hours = now.getHours();
+      const minutes = now.getMinutes();
+      const seconds = now.getSeconds();
 
-            if (!manualMode) {
-                document.getElementById("date-display").textContent =
-                    `${year}年 ${month.toString().padStart(2, '0')}月 ${date.toString().padStart(2, '0')}日 (${day}曜日)`;
-            }
+      if (!manualMode) {
+        document.getElementById("date-display").textContent =
+          `${year}年 ${month.toString().padStart(2, '0')}月 ${date.toString().padStart(2, '0')}日 (${day}曜日)`;
+      }
 
-            document.getElementById("digital-clock").textContent =
-                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+      document.getElementById("digital-clock").textContent =
+        `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 
-            updatePeriodDisplay(hours, minutes);
-            updateMessage(hours, minutes);
-        }
+      updatePeriodDisplay(hours, minutes);
+      updateMessage(hours, minutes);
+    }
 
-        function updatePeriodDisplay(hours, minutes) {
-            const periodDisplay = document.getElementById('period-display');
-            const time = hours * 60 + minutes;
+    function updatePeriodDisplay(hours, minutes) {
+      const periodDisplay = document.getElementById('period-display');
+      const time = hours * 60 + minutes;
 
-            const periods = [
-                { start: 8 * 60 + 45, end: 9 * 60 + 35, text: "1時限目試験中" },
-                { start: 9 * 60 + 50, end: 10 * 60 + 40, text: "2時限目試験中" },
-                { start: 10 * 60 + 55, end: 11 * 60 + 45, text: "3時限目試験中" },
-                { start: 12 * 60 + 35, end: 13 * 60 + 25, text: "4時限目試験中" }
-            ];
+      const periods = [
+        { start: 8 * 60 + 45, end: 9 * 60 + 35, text: "1時限目試験中" },
+        { start: 9 * 60 + 50, end: 10 * 60 + 40, text: "2時限目試験中" },
+        { start: 10 * 60 + 55, end: 11 * 60 + 45, text: "3時限目試験中" },
+        { start: 12 * 60 + 35, end: 13 * 60 + 25, text: "4時限目試験中" }
+      ];
 
-            const period = periods.find(p => time >= p.start && time < p.end);
+      const period = periods.find(p => time >= p.start && time < p.end);
 
-            if (period) {
-                const remainingMinutes = period.end - time;
-                periodDisplay.textContent = `${period.text} (あと${remainingMinutes}分)`;
-            } else {
-                periodDisplay.textContent = '';
-            }
-        }
+      if (period) {
+        const remainingMinutes = period.end - time;
+        periodDisplay.textContent = `${period.text} (あと${remainingMinutes}分)`;
+      } else {
+        periodDisplay.textContent = '';
+      }
+    }
 
-        function updateMessage(hours, minutes) {
-            const messageDisplay = document.getElementById('message-display');
-            messageDisplay.textContent = '';
+    function updateMessage(hours, minutes) {
+      const messageDisplay = document.getElementById('message-display');
+      messageDisplay.textContent = '';
 
-            const time = hours * 60 + minutes;
+      const time = hours * 60 + minutes;
 
-            const bTimes = [
-                { start: 8 * 60 + 45, end: 9 * 60 },
-                { start: 9 * 60 + 50, end: 10 * 60 + 5 },
-                { start: 10 * 60 + 55, end: 11 * 60 + 10 }  // 10:55〜11:10 対応B
-            ];
+      const bTimes = [
+        { start: 8 * 60 + 45, end: 9 * 60 },
+        { start: 9 * 60 + 50, end: 10 * 60 + 5 },
+        { start: 10 * 60 + 55, end: 11 * 60 + 10 }
+      ];
 
-            const cTimes = [
-                { start: 9 * 60, end: 9 * 60 + 35 },
-                { start: 10 * 60 + 5, end: 10 * 60 + 40 },
-                { start: 11 * 60 + 10, end: 11 * 60 + 45 }  // 11:10〜11:45 対応C
-            ];
+      const cTimes = [
+        { start: 9 * 60, end: 9 * 60 + 35 },
+        { start: 10 * 60 + 5, end: 10 * 60 + 40 },
+        { start: 11 * 60 + 10, end: 11 * 60 + 45 }
+      ];
 
-            let message = '';
+      let message = '';
 
-            if (bTimes.some(period => time >= period.start && time < period.end)) {
-                message = `
+      if (bTimes.some(period => time >= period.start && time < period.end)) {
+        message = `
 対応B
 ◯1年英語・2年英語・3年英語演習で実施されるリスニング試験について
 →音声を戻しての受験はできません。
@@ -129,9 +138,9 @@
 →中等部は受験するしないにかかわらず, 遅刻となります.
 →高等部は受験すれば遅刻. 受験しなければ欠課となります.
 ◯遅刻カードをカウンターで記入してください. 遅刻カードは教室の先生に渡してください.
-                `;
-            } else if (cTimes.some(period => time >= period.start && time < period.end)) {
-                message = `
+        `;
+      } else if (cTimes.some(period => time >= period.start && time < period.end)) {
+        message = `
 対応C
 ◯未受験の場合の評価について
 ・学期内に行われる試験が中間・期末2回の科目の場合
@@ -140,14 +149,75 @@
 ◯学期内に行われる試験が期末1回の科目の場合
 →中等部は評価1. (3学期は1学期と2学期の評価から算定)
 →高等部は未評価扱いで追試対象.
-                `;
-            }
+        `;
+      }
 
-            messageDisplay.textContent = message.trim();
+      messageDisplay.textContent = message.trim();
+    }
+
+    // ====== Open-Meteo で品川区の天気取得 ======
+    // 参考: https://open-meteo.com/ （APIキー不要・無料）
+    // 品川区付近の緯度経度（固定）
+    const SHINAGAWA = { lat: 35.609, lon: 139.73 };
+
+    const weatherCodeText = (code) => {
+      // 簡易マッピング（代表値）
+      if (code === 0) return '快晴';
+      if ([1,2,3].includes(code)) return '晴れ時々くもり';
+      if ([45,48].includes(code)) return '霧・もや';
+      if ([51,53,55,56,57].includes(code)) return '霧雨';
+      if ([61,63,65,66,67].includes(code)) return '雨';
+      if ([80,81,82].includes(code)) return 'にわか雨';
+      if ([71,73,75,77].includes(code)) return '雪';
+      if ([85,86].includes(code)) return 'にわか雪';
+      if ([95,96,99].includes(code)) return '雷雨';
+      return '不明';
+    };
+
+    async function fetchWeather() {
+      const url = new URL('https://api.open-meteo.com/v1/forecast');
+      url.searchParams.set('latitude', SHINAGAWA.lat);
+      url.searchParams.set('longitude', SHINAGAWA.lon);
+      url.searchParams.set('timezone', 'Asia/Tokyo');
+      url.searchParams.set('current', 'temperature_2m,weather_code');
+      url.searchParams.set('daily', 'temperature_2m_max,temperature_2m_min,precipitation_probability_max');
+
+      const el = document.getElementById('weather-display');
+      try {
+        const res = await fetch(url.toString());
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+
+        const curTemp = data?.current?.temperature_2m;
+        const curCode = data?.current?.weather_code;
+        const wtxt = weatherCodeText(curCode);
+        const tmax = data?.daily?.temperature_2m_max?.[0];
+        const tmin = data?.daily?.temperature_2m_min?.[0];
+        const popMax = data?.daily?.precipitation_probability_max?.[0];
+
+        let line1 = `品川区 現在 ${curTemp !== undefined ? `${Math.round(curTemp)}°C` : '--'}（${wtxt}）`;
+        let line2 = '';
+        if (tmax !== undefined && tmin !== undefined) {
+          line2 = `今日 最高${Math.round(tmax)}° / 最低${Math.round(tmin)}°`;
+        }
+        if (popMax !== undefined) {
+          line2 += (line2 ? '｜' : '') + `降水確率${popMax}%`;
         }
 
-        setInterval(updateClock, 1000);
-        updateClock();
-    </script>
+        el.textContent = [line1, line2].filter(Boolean).join('\n');
+      } catch (e) {
+        el.textContent = '天気の取得に失敗しました。ネットワークをご確認ください。';
+        console.error(e);
+      }
+    }
+
+    // 10分ごとに更新
+    setInterval(fetchWeather, 10 * 60 * 1000);
+
+    // 初期描画
+    setInterval(updateClock, 1000);
+    updateClock();
+    fetchWeather();
+  </script>
 </body>
 </html>
