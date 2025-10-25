@@ -38,7 +38,7 @@
     .settings-note { font-size: 12px; color: #bbb; }
   </style>
 </head>
-<body><script>(function(){try{var k='clockSettings';var v={"loc":{"name":"品川区","lat":"35.609","lon":"139.73"},"periods":{"period1":{"start":"08:45","end":"09:35"},"period2":{"start":"09:50","end":"10:40"},"period3":{"start":"10:55","end":"11:45"},"period4":{"start":"12:35","end":"13:25"}},"bTimes":{"period1b":{"start":"09:05","end":"09:20"},"period2b":{"start":"10:10","end":"10:25"},"period3b":{"start":"11:15","end":"11:30"}},"cTimes":{"period1c":{"start":"09:20","end":"09:55"},"period2c":{"start":"10:25","end":"11:00"},"period3c":{"start":"11:30","end":"12:05"}},"messages":{"messageA":"","messageB":"対応B\n◯1年英語・2年英語・3年英語演習で実施されるリスニング試験について\n→音声を戻しての受験はできません。\n◯出欠席について\n→中等部は受験するしないにかかわらず, 遅刻となります.\n→高等部は受験すれば遅刻. 受験しなければ欠課となります.\n◯遅刻カードをカウンターで記入してください. 遅刻カードは教室の先生に渡してください.","messageC":"対応C\n◯未受験の場合の評価について\n・学期内に行われる試験が中間・期末2回の科目の場合\n→得点のある回から評価を算定します. (評価がよくなることはありません)\n→2回とも未受験の場合, 中等部は評価1. 高等部は未評価扱いで追試対象.\n◯学期内に行われる試験が期末1回の科目の場合\n→中等部は評価1. (3学期は1学期と2学期の評価から算定)\n→高等部は未評価扱いで追試対象."}};if(!localStorage.getItem(k)){localStorage.setItem(k, JSON.stringify(v));}}catch(e){}})();</script>
+<body><script>(function(){try{var k='clockSettings';var v={"loc":{"name":"品川区","lat":"35.609","lon":"139.73"},"periods":{"period1":{"start":"08:45","end":"09:35"},"period2":{"start":"09:50","end":"10:40"},"period3":{"start":"10:55","end":"11:45"},"period4":{"start":"12:35","end":"13:25"}},"bTimes":{"period1b":{"start":"08:45","end":"09:00"},"period2b":{"start":"09:50","end":"10:05"},"period3b":{"start":"10:55","end":"11:10"}},"cTimes":{"period1c":{"start":"09:00","end":"09:35"},"period2c":{"start":"10:05","end":"10:40"},"period3c":{"start":"11:10","end":"11:45"}},"messages":{"messageA":"","messageB":"対応B\n◯1年英語・2年英語・3年英語演習で実施されるリスニング試験について\n→音声を戻しての受験はできません。\n◯出欠席について\n→中等部は受験するしないにかかわらず, 遅刻となります.\n→高等部は受験すれば遅刻. 受験しなければ欠課となります.\n◯遅刻カードをカウンターで記入してください. 遅刻カードは教室の先生に渡してください.","messageC":"対応C\n◯未受験の場合の評価について\n・学期内に行われる試験が中間・期末2回の科目の場合\n→得点のある回から評価を算定します. (評価がよくなることはありません)\n→2回とも未受験の場合, 中等部は評価1. 高等部は未評価扱いで追試対象.\n◯学期内に行われる試験が期末1回の科目の場合\n→中等部は評価1. (3学期は1学期と2学期の評価から算定)\n→高等部は未評価扱いで追試対象."}};if(!localStorage.getItem(k)){localStorage.setItem(k, JSON.stringify(v));}}catch(e){}})();</script><script>(function(){try{var k='clockSettings';var v={"loc":{"name":"品川区","lat":"35.609","lon":"139.73"},"periods":{"period1":{"start":"08:45","end":"09:35"},"period2":{"start":"09:50","end":"10:40"},"period3":{"start":"10:55","end":"11:45"},"period4":{"start":"12:35","end":"13:25"}},"bTimes":{"period1b":{"start":"09:05","end":"09:20"},"period2b":{"start":"10:10","end":"10:25"},"period3b":{"start":"11:15","end":"11:30"}},"cTimes":{"period1c":{"start":"09:20","end":"09:55"},"period2c":{"start":"10:25","end":"11:00"},"period3c":{"start":"11:30","end":"12:05"}},"messages":{"messageA":"","messageB":"対応B\n◯1年英語・2年英語・3年英語演習で実施されるリスニング試験について\n→音声を戻しての受験はできません。\n◯出欠席について\n→中等部は受験するしないにかかわらず, 遅刻となります.\n→高等部は受験すれば遅刻. 受験しなければ欠課となります.\n◯遅刻カードをカウンターで記入してください. 遅刻カードは教室の先生に渡してください.","messageC":"対応C\n◯未受験の場合の評価について\n・学期内に行われる試験が中間・期末2回の科目の場合\n→得点のある回から評価を算定します. (評価がよくなることはありません)\n→2回とも未受験の場合, 中等部は評価1. 高等部は未評価扱いで追試対象.\n◯学期内に行われる試験が期末1回の科目の場合\n→中等部は評価1. (3学期は1学期と2学期の評価から算定)\n→高等部は未評価扱いで追試対象."}};if(!localStorage.getItem(k)){localStorage.setItem(k, JSON.stringify(v));}}catch(e){}})();</script>
   <div class="top-right-controls">
     <button id="mode-toggle" onclick="toggleManualMode()">手動モード</button>
     <input type="time" id="manual-time" style="display: none;" onchange="updateManualTime()">
@@ -157,18 +157,17 @@
     <div class="weather" id="weather-display">品川区 現在 14°C（晴れ時々くもり）
 今日 最高15° / 最低13°｜降水確率45%</div>
     <div class="date" id="date-display">2025年 10月 25日 (土曜日)</div>
-    <div class="digital-clock" id="digital-clock">10:35:01</div>
-    <div class="period-display" id="period-display">2時限目試験中 (あと5分)</div>
+    <div class="digital-clock" id="digital-clock">11:04:18</div>
+    <div class="period-display" id="period-display">3時限目試験中 (あと41分)</div>
   </div>
 
-  <div class="bottom-section" id="message-display">対応C
-◯未受験の場合の評価について
-・学期内に行われる試験が中間・期末2回の科目の場合
-→得点のある回から評価を算定します. (評価がよくなることはありません)
-→2回とも未受験の場合, 中等部は評価1. 高等部は未評価扱いで追試対象.
-◯学期内に行われる試験が期末1回の科目の場合
-→中等部は評価1. (3学期は1学期と2学期の評価から算定)
-→高等部は未評価扱いで追試対象.</div>
+  <div class="bottom-section" id="message-display">対応B
+◯1年英語・2年英語・3年英語演習で実施されるリスニング試験について
+→音声を戻しての受験はできません。
+◯出欠席について
+→中等部は受験するしないにかかわらず, 遅刻となります.
+→高等部は受験すれば遅刻. 受験しなければ欠課となります.
+◯遅刻カードをカウンターで記入してください. 遅刻カードは教室の先生に渡してください.</div>
 
   <script>
     // ===== 手動モード =====
@@ -336,6 +335,7 @@
     setInterval(updateClock, 1000); updateClock();
     fetchWeather(); setInterval(fetchWeather, 10*60*1000);
   </script>
+
 
 
 </body></html>
