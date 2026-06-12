@@ -1,343 +1,432 @@
 <!DOCTYPE html>
-<html lang="ja"><head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>教務定期試験時刻管理</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { display: flex; flex-direction: column; justify-content: space-between; height: 100vh; background: #000; color: #ff0; font-family: Arial, sans-serif; }
-
-    .top-right-controls { position: absolute; top: 10px; right: 10px; display: flex; gap: 10px; flex-wrap: wrap; z-index: 1001; }
-    button { font-size: 1.5vmin; padding: 0.5vmin; cursor: pointer; }
-    input[type="time"] { font-size: 1.6vmin; }
-
-    /* ===== 上段（天気/日付/時計/時限） ===== */
-    .top-section { display: grid; grid-template-rows: auto auto auto auto; align-content: start; justify-items: center; height: 50vh; position: relative; padding-top: calc(max(1.2vmin, env(safe-area-inset-top))); padding-inline: clamp(2vmin, 3vw, 4vmin); row-gap: 1vmin; width: 100%; }
-
-    .weather { justify-self: start; margin-left: 0; font-size: clamp(2.6vmin, 3.2vw, 3.6vmin); color: #bde0ff; text-shadow: 1px 1px 3px rgba(0, 150, 255, 0.5); white-space: pre-line; max-width: 100%; overflow-wrap: anywhere; word-break: break-word; line-height: 1.2; }
-
-    .date { font-size: clamp(4vmin, 4.5vw, 5vmin); font-weight: bold; margin-bottom: 0.2vmin; text-shadow: 2px 2px 5px rgba(0, 255, 0, 0.7); color: lime; width: 100%; text-align: center; overflow: hidden; text-overflow: ellipsis; }
-
-    /* 10%拡大＋高さ優先で切れ防止 */
-    .digital-clock { font-size: min(22vmin, 34vh); line-height: 0.85; font-weight: bold; text-shadow: 5px 5px 10px rgba(255, 255, 0, 0.5); width: 100%; text-align: center; overflow: hidden; }
-
-    .period-display { font-size: 7.5vmin; margin-top: 0.5vmin; color: #fff; width: 100%; text-align: center; line-height: 1.05; }
-
-    /* ===== 下段（メッセージ） ===== */
-    .bottom-section { display: flex; align-items: flex-start; justify-content: flex-start; padding: 2vmin; height: 50vh; font-size: 3vmin; white-space: pre-line; text-align: left; overflow-y: auto; width: 100%; }
-
-    /* ===== 設定パネル ===== */
-    .settings-panel { position: fixed; top: 54px; right: 10px; background: #333; color: white; padding: 15px; border-radius: 6px; display: none; max-width: 420px; max-height: 80vh; overflow-y: auto; z-index: 1000; box-shadow: 0 6px 18px rgba(0,0,0,0.5); }
-    .settings-panel h3 { margin: 10px 0; color: lime; }
-    .settings-panel label { display: block; margin: 6px 0 2px 0; font-size: 12px; }
-    .settings-panel input, .settings-panel textarea { width: 100%; margin: 2px 0 8px 0; padding: 6px; border: 1px solid #666; border-radius: 4px; background: #222; color: #fff; }
-    .settings-panel textarea { min-height: 80px; resize: vertical; }
-    .time-setting { display: flex; gap: 10px; align-items: center; margin: 5px 0; }
-    .time-setting input[type="time"] { width: 110px; }
-    .settings-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
-    .settings-note { font-size: 12px; color: #bbb; }
-  </style>
-</head>
-<body><script>(function(){try{var k='clockSettings';var v={"loc":{"name":"品川区","lat":"35.609","lon":"139.73"},"periods":{"period1":{"start":"08:45","end":"09:35"},"period2":{"start":"09:50","end":"10:40"},"period3":{"start":"10:55","end":"11:45"},"period4":{"start":"12:35","end":"13:25"}},"bTimes":{"period1b":{"start":"08:45","end":"09:00"},"period2b":{"start":"09:50","end":"10:05"},"period3b":{"start":"10:55","end":"11:10"}},"cTimes":{"period1c":{"start":"09:00","end":"09:35"},"period2c":{"start":"10:05","end":"10:40"},"period3c":{"start":"11:10","end":"11:45"}},"messages":{"messageA":"","messageB":"対応B\n◯1年英語・2年英語・3年英語演習で実施されるリスニング試験について\n→音声を戻しての受験はできません。\n◯出欠席について\n→中等部は受験するしないにかかわらず, 遅刻となります.\n→高等部は受験すれば遅刻. 受験しなければ欠課となります.\n◯遅刻カードをカウンターで記入してください. 遅刻カードは教室の先生に渡してください.","messageC":"対応C\n◯未受験の場合の評価について\n・学期内に行われる試験が中間・期末2回の科目の場合\n→得点のある回から評価を算定します. (評価がよくなることはありません)\n→2回とも未受験の場合, 中等部は評価1. 高等部は未評価扱いで追試対象.\n◯学期内に行われる試験が期末1回の科目の場合\n→中等部は評価1. (3学期は1学期と2学期の評価から算定)\n→高等部は未評価扱いで追試対象."}};if(!localStorage.getItem(k)){localStorage.setItem(k, JSON.stringify(v));}}catch(e){}})();</script><script>(function(){try{var k='clockSettings';var v={"loc":{"name":"品川区","lat":"35.609","lon":"139.73"},"periods":{"period1":{"start":"08:45","end":"09:35"},"period2":{"start":"09:50","end":"10:40"},"period3":{"start":"10:55","end":"11:45"},"period4":{"start":"12:35","end":"13:25"}},"bTimes":{"period1b":{"start":"08:45","end":"09:00"},"period2b":{"start":"09:50","end":"10:05"},"period3b":{"start":"10:55","end":"11:10"}},"cTimes":{"period1c":{"start":"09:00","end":"09:35"},"period2c":{"start":"10:05","end":"10:40"},"period3c":{"start":"11:10","end":"11:45"}},"messages":{"messageA":"","messageB":"対応B\n◯1年英語・2年英語・3年英語演習で実施されるリスニング試験について\n→音声を戻しての受験はできません。\n◯出欠席について\n→中等部は受験するしないにかかわらず, 遅刻となります.\n→高等部は受験すれば遅刻. 受験しなければ欠課となります.\n◯遅刻カードをカウンターで記入してください. 遅刻カードは教室の先生に渡してください.","messageC":"対応C\n◯未受験の場合の評価について\n・学期内に行われる試験が中間・期末2回の科目の場合\n→得点のある回から評価を算定します. (評価がよくなることはありません)\n→2回とも未受験の場合, 中等部は評価1. 高等部は未評価扱いで追試対象.\n◯学期内に行われる試験が期末1回の科目の場合\n→中等部は評価1. (3学期は1学期と2学期の評価から算定)\n→高等部は未評価扱いで追試対象."}};if(!localStorage.getItem(k)){localStorage.setItem(k, JSON.stringify(v));}}catch(e){}})();</script><script>(function(){try{var k='clockSettings';var v={"loc":{"name":"品川区","lat":"35.609","lon":"139.73"},"periods":{"period1":{"start":"08:45","end":"09:35"},"period2":{"start":"09:50","end":"10:40"},"period3":{"start":"10:55","end":"11:45"},"period4":{"start":"12:35","end":"13:25"}},"bTimes":{"period1b":{"start":"09:05","end":"09:20"},"period2b":{"start":"10:10","end":"10:25"},"period3b":{"start":"11:15","end":"11:30"}},"cTimes":{"period1c":{"start":"09:20","end":"09:35"},"period2c":{"start":"10:25","end":"11:00"},"period3c":{"start":"11:30","end":"12:05"}},"messages":{"messageA":"","messageB":"対応B\n◯1年英語・2年英語・3年英語演習で実施されるリスニング試験について\n→音声を戻しての受験はできません。\n◯出欠席について\n→中等部は受験するしないにかかわらず, 遅刻となります.\n→高等部は受験すれば遅刻. 受験しなければ欠課となります.\n◯遅刻カードをカウンターで記入してください. 遅刻カードは教室の先生に渡してください.","messageC":"対応C\n◯未受験の場合の評価について\n・学期内に行われる試験が中間・期末2回の科目の場合\n→得点のある回から評価を算定します. (評価がよくなることはありません)\n→2回とも未受験の場合, 中等部は評価1. 高等部は未評価扱いで追試対象.\n◯学期内に行われる試験が期末1回の科目の場合\n→中等部は評価1. (3学期は1学期と2学期の評価から算定)\n→高等部は未評価扱いで追試対象."}};if(!localStorage.getItem(k)){localStorage.setItem(k, JSON.stringify(v));}}catch(e){}})();</script>
-  <div class="top-right-controls">
-    <button id="mode-toggle" onclick="toggleManualMode()">手動モード</button>
-    <input type="time" id="manual-time" style="display: none;" onchange="updateManualTime()">
-    <button onclick="toggleSettings()">設定</button>
-  </div>
-
-  <div class="settings-panel" id="settings-panel" style="display: block;">
-    <h3>天気設定</h3>
-    <label>地域名（表示用）</label>
-    <input id="loc-name" value="品川区">
-    <div style="display:flex; gap:8px;">
-      <div style="flex:1;">
-        <label>緯度 (latitude)</label>
-        <input id="loc-lat" value="35.609">
-      </div>
-      <div style="flex:1;">
-        <label>経度 (longitude)</label>
-        <input id="loc-lon" value="139.73">
-      </div>
-    </div>
-
-    <h3>時間帯設定</h3>
-    <div>
-      <label>1時限目:</label>
-      <div class="time-setting">
-        <input type="time" id="period1-start" value="09:05"><span>〜</span>
-        <input type="time" id="period1-end" value="09:35">
-      </div>
-      <label>2時限目:</label>
-      <div class="time-setting">
-        <input type="time" id="period2-start" value="10:10"><span>〜</span>
-        <input type="time" id="period2-end" value="11:00">
-      </div>
-      <label>3時限目:</label>
-      <div class="time-setting">
-        <input type="time" id="period3-start" value="11:15"><span>〜</span>
-        <input type="time" id="period3-end" value="12:05">
-      </div>
-      <label>4時限目:</label>
-      <div class="time-setting">
-        <input type="time" id="period4-start" value="12:55"><span>〜</span>
-        <input type="time" id="period4-end" value="13:45">
-      </div>
-    </div>
-
-    <h3>対応B時間帯設定</h3>
-    <div>
-      <label>1時限目B:</label>
-      <div class="time-setting">
-        <input type="time" id="period1b-start" value="09:05"><span>〜</span>
-        <input type="time" id="period1b-end" value="09:20">
-      </div>
-      <label>2時限目B:</label>
-      <div class="time-setting">
-        <input type="time" id="period2b-start" value="10:10"><span>〜</span>
-        <input type="time" id="period2b-end" value="10:25">
-      </div>
-      <label>3時限目B:</label>
-      <div class="time-setting">
-        <input type="time" id="period3b-start" value="11:15"><span>〜</span>
-        <input type="time" id="period3b-end" value="11:30">
-      </div>
-    </div>
-
-    <h3>対応C時間帯設定</h3>
-    <div>
-      <label>1時限目C:</label>
-      <div class="time-setting">
-        <input type="time" id="period1c-start" value="09:20"><span>〜</span>
-        <input type="time" id="period1c-end" value="09:35">
-      </div>
-      <label>2時限目C:</label>
-      <div class="time-setting">
-        <input type="time" id="period2c-start" value="10:25"><span>〜</span>
-        <input type="time" id="period2c-end" value="11:00">
-      </div>
-      <label>3時限目C:</label>
-      <div class="time-setting">
-        <input type="time" id="period3c-start" value="11:30"><span>〜</span>
-        <input type="time" id="period3c-end" value="12:05">
-      </div>
-    </div>
-
-    <h3>対応A文章</h3>
-    <textarea id="message-a" placeholder="対応A時の表示メッセージ"></textarea>
-
-    <h3>対応B文章</h3>
-    <textarea id="message-b">対応B
-◯1年英語・2年英語・3年英語演習で実施されるリスニング試験について
-→音声を戻しての受験はできません。
-◯出欠席について
-→中等部は受験するしないにかかわらず, 遅刻となります.
-→高等部は受験すれば遅刻. 受験しなければ欠課となります.
-◯遅刻カードをカウンターで記入してください. 遅刻カードは教室の先生に渡してください.</textarea>
-
-    <h3>対応C文章</h3>
-    <textarea id="message-c">対応C
-◯未受験の場合の評価について
-・学期内に行われる試験が中間・期末2回の科目の場合
-→得点のある回から評価を算定します. (評価がよくなることはありません)
-→2回とも未受験の場合, 中等部は評価1. 高等部は未評価扱いで追試対象.
-◯学期内に行われる試験が期末1回の科目の場合
-→中等部は評価1. (3学期は1学期と2学期の評価から算定)
-→高等部は未評価扱いで追試対象.</textarea>
-
-    <div class="settings-actions">
-      <button onclick="saveSettings()">設定を保存</button>
-      <button onclick="resetSettings()">デフォルトに戻す</button>
-      <button onclick="toggleSettings()">閉じる</button>
-      <button onclick="exportHtml()">HTMLを書き出す</button>
-    </div>
-    <div class="settings-note">保存内容はブラウザのローカルに保存（localStorage）。書き出しHTMLは現在の設定を既定値として含みます。</div>
-  </div>
-
-  <div class="top-section">
-    <div class="weather" id="weather-display">品川区 現在 20°C（晴れ時々くもり）
-今日 最高22° / 最低17°｜降水確率3%</div>
-    <div class="date" id="date-display">2025年 10月 27日 (月曜日)</div>
-    <div class="digital-clock" id="digital-clock">09:06:26</div>
-    <div class="period-display" id="period-display">1時限目試験中 (あと29分)</div>
-  </div>
-
-  <div class="bottom-section" id="message-display">対応C
-◯未受験の場合の評価について
-・学期内に行われる試験が中間・期末2回の科目の場合
-→得点のある回から評価を算定します. (評価がよくなることはありません)
-→2回とも未受験の場合, 中等部は評価1. 高等部は未評価扱いで追試対象.
-◯学期内に行われる試験が期末1回の科目の場合
-→中等部は評価1. (3学期は1学期と2学期の評価から算定)
-→高等部は未評価扱いで追試対象.</div>
-
-  <script>
-    // ===== 手動モード =====
-    let manualMode = false;
-    let manualTime = null;
-    function updateModeButton(){
-      const btn = document.getElementById('mode-toggle');
-      if(btn) btn.textContent = manualMode ? '通常モード' : '手動モード';
-    }
-    function toggleManualMode(){
-      manualMode = !manualMode;
-      document.getElementById('manual-time').style.display = manualMode ? 'inline' : 'none';
-      document.getElementById('date-display').style.display = manualMode ? 'none' : 'block';
-      updateModeButton();
-    }
-    function updateManualTime(){
-      const input = document.getElementById('manual-time').value;
-      if (input) { const a = input.split(':').map(Number); manualTime = { hours: a[0], minutes: a[1] }; }
-    }
-    function getCurrentTime(){ return (manualMode && manualTime) ? new Date(2025,0,1,manualTime.hours,manualTime.minutes,0) : new Date(); }
-
-    // ===== 時計・表示 =====
-    function timeToMinutes(hhmm){ const a = hhmm.split(':').map(Number); return a[0]*60 + a[1]; }
-    function getPeriodTimes(){
-      return [
-        { start: timeToMinutes(document.getElementById('period1-start').value), end: timeToMinutes(document.getElementById('period1-end').value), text: '1時限目試験中' },
-        { start: timeToMinutes(document.getElementById('period2-start').value), end: timeToMinutes(document.getElementById('period2-end').value), text: '2時限目試験中' },
-        { start: timeToMinutes(document.getElementById('period3-start').value), end: timeToMinutes(document.getElementById('period3-end').value), text: '3時限目試験中' },
-        { start: timeToMinutes(document.getElementById('period4-start').value), end: timeToMinutes(document.getElementById('period4-end').value), text: '4時限目試験中' },
-      ];
-    }
-    function getBTimes(){
-      return [
-        { start: timeToMinutes(document.getElementById('period1b-start').value), end: timeToMinutes(document.getElementById('period1b-end').value) },
-        { start: timeToMinutes(document.getElementById('period2b-start').value), end: timeToMinutes(document.getElementById('period2b-end').value) },
-        { start: timeToMinutes(document.getElementById('period3b-start').value), end: timeToMinutes(document.getElementById('period3b-end').value) },
-      ];
-    }
-    function getCTimes(){
-      return [
-        { start: timeToMinutes(document.getElementById('period1c-start').value), end: timeToMinutes(document.getElementById('period1c-end').value) },
-        { start: timeToMinutes(document.getElementById('period2c-start').value), end: timeToMinutes(document.getElementById('period2c-end').value) },
-        { start: timeToMinutes(document.getElementById('period3c-start').value), end: timeToMinutes(document.getElementById('period3c-end').value) },
-      ];
-    }
-    function updateClock(){
-      const now = getCurrentTime();
-      const y = now.getFullYear(), m = now.getMonth()+1, d = now.getDate();
-      const w = ['日','月','火','水','木','金','土'][now.getDay()];
-      const h = now.getHours(), mm = now.getMinutes(), s = now.getSeconds();
-      if(!manualMode){ document.getElementById('date-display').textContent = y+'年 '+(''+m).padStart(2,'0')+'月 '+(''+d).padStart(2,'0')+'日 ('+w+'曜日)'; }
-      document.getElementById('digital-clock').textContent = (''+h).padStart(2,'0')+':'+(''+mm).padStart(2,'0')+':'+(''+s).padStart(2,'0');
-      updatePeriodDisplay(h, mm); updateMessage(h, mm);
-    }
-    function updatePeriodDisplay(h, mm){
-      const t = h*60 + mm; const p = getPeriodTimes().find(x => t>=x.start && t<x.end);
-      const el = document.getElementById('period-display');
-      if(p){ el.textContent = p.text + ' (あと'+(p.end - t)+'分)'; } else { el.textContent = ''; }
-    }
-    function updateMessage(h, mm){
-      const t = h*60 + mm; const b = getBTimes(); const c = getCTimes(); let msg = '';
-      if(b.some(x=>t>=x.start && t<x.end)) msg = document.getElementById('message-b').value.trim();
-      else if(c.some(x=>t>=x.start && t<x.end)) msg = document.getElementById('message-c').value.trim();
-      else msg = (document.getElementById('message-a').value||'').trim();
-      document.getElementById('message-display').textContent = msg;
-    }
-
-    // ===== 天気（Open‑Meteo） =====
-    function weatherCodeText(code){
-      if (code === 0) return '快晴';
-      if ([1,2,3].includes(code)) return '晴れ時々くもり';
-      if ([45,48].includes(code)) return '霧・もや';
-      if ([51,53,55,56,57].includes(code)) return '霧雨';
-      if ([61,63,65,66,67].includes(code)) return '雨';
-      if ([80,81,82].includes(code)) return 'にわか雨';
-      if ([71,73,75,77].includes(code)) return '雪';
-      if ([85,86].includes(code)) return 'にわか雪';
-      if ([95,96,99].includes(code)) return '雷雨';
-      return '不明';
-    }
-    async function fetchWeather(){
-      const el = document.getElementById('weather-display');
-      const name = (document.getElementById('loc-name').value || '品川区').trim();
-      const lat = parseFloat(document.getElementById('loc-lat').value || '35.609');
-      const lon = parseFloat(document.getElementById('loc-lon').value || '139.73');
-      const url = new URL('https://api.open-meteo.com/v1/forecast');
-      url.searchParams.set('latitude', lat);
-      url.searchParams.set('longitude', lon);
-      url.searchParams.set('timezone', 'Asia/Tokyo');
-      url.searchParams.set('current', 'temperature_2m,weather_code');
-      url.searchParams.set('daily', 'temperature_2m_max,temperature_2m_min,precipitation_probability_max');
-      try{
-        const res = await fetch(url.toString()); if(!res.ok) throw new Error('HTTP '+res.status);
-        const data = await res.json();
-        const curTemp = data && data.current ? data.current.temperature_2m : undefined;
-        const curCode = data && data.current ? data.current.weather_code : undefined;
-        const tmax = data && data.daily ? data.daily.temperature_2m_max[0] : undefined;
-        const tmin = data && data.daily ? data.daily.temperature_2m_min[0] : undefined;
-        const popMax = data && data.daily ? data.daily.precipitation_probability_max[0] : undefined;
-        var line1 = name+' 現在 '+(curTemp!==undefined? Math.round(curTemp)+'°C' : '--')+'（'+weatherCodeText(curCode)+'）';
-        var line2 = '';
-        if(tmax!==undefined && tmin!==undefined){ line2 = '今日 最高'+Math.round(tmax)+'° / 最低'+Math.round(tmin)+'°'; }
-        if(popMax!==undefined){ line2 += (line2? '｜':'') + '降水確率'+popMax+'%'; }
-        el.textContent = (line2? line1+'\n'+line2 : line1);
-      }catch(e){ console.error(e); el.textContent = '天気の取得に失敗しました。'; }
-    }
-
-    // ===== 設定（保存/読込/適用） =====
-    function collectSettings(){
-      return {
-        loc: { name: document.getElementById('loc-name').value, lat: document.getElementById('loc-lat').value, lon: document.getElementById('loc-lon').value },
-        periods: {
-          period1: { start: document.getElementById('period1-start').value, end: document.getElementById('period1-end').value },
-          period2: { start: document.getElementById('period2-start').value, end: document.getElementById('period2-end').value },
-          period3: { start: document.getElementById('period3-start').value, end: document.getElementById('period3-end').value },
-          period4: { start: document.getElementById('period4-start').value, end: document.getElementById('period4-end').value },
-        },
-        bTimes: {
-          period1b: { start: document.getElementById('period1b-start').value, end: document.getElementById('period1b-end').value },
-          period2b: { start: document.getElementById('period2b-start').value, end: document.getElementById('period2b-end').value },
-          period3b: { start: document.getElementById('period3b-start').value, end: document.getElementById('period3b-end').value },
-        },
-        cTimes: {
-          period1c: { start: document.getElementById('period1c-start').value, end: document.getElementById('period1c-end').value },
-          period2c: { start: document.getElementById('period2c-start').value, end: document.getElementById('period2c-end').value },
-          period3c: { start: document.getElementById('period3c-start').value, end: document.getElementById('period3c-end').value },
-        },
-        messages: {
-          messageA: document.getElementById('message-a').value,
-          messageB: document.getElementById('message-b').value,
-          messageC: document.getElementById('message-c').value,
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>定期試験 遅刻対応表示（必要パフォーマンス計算付き）</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100vh;
+            background: black;
+            color: yellow;
+            font-family: Arial, "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
         }
-      };
-    }
-    function applySettings(s){
-      if(!s) return;
-      if(s.loc){ if(s.loc.name) document.getElementById('loc-name').value=s.loc.name; if(s.loc.lat) document.getElementById('loc-lat').value=s.loc.lat; if(s.loc.lon) document.getElementById('loc-lon').value=s.loc.lon; }
-      if(s.periods){ for(var k in s.periods){ if(s.periods[k]){ var st=document.getElementById(k+'-start'); var en=document.getElementById(k+'-end'); if(st && s.periods[k].start) st.value=s.periods[k].start; if(en && s.periods[k].end) en.value=s.periods[k].end; } } }
-      if(s.bTimes){ for(var kb in s.bTimes){ if(s.bTimes[kb]){ var sb=document.getElementById(kb+'-start'); var eb=document.getElementById(kb+'-end'); if(sb && s.bTimes[kb].start) sb.value=s.bTimes[kb].start; if(eb && s.bTimes[kb].end) eb.value=s.bTimes[kb].end; } } }
-      if(s.cTimes){ for(var kc in s.cTimes){ if(s.cTimes[kc]){ var sc=document.getElementById(kc+'-start'); var ec=document.getElementById(kc+'-end'); if(sc && s.cTimes[kc].start) sc.value=s.cTimes[kc].start; if(ec && s.cTimes[kc].end) ec.value=s.cTimes[kc].end; } } }
-      if(s.messages){ if('messageA' in s.messages) document.getElementById('message-a').value = s.messages.messageA || ''; if('messageB' in s.messages) document.getElementById('message-b').value = s.messages.messageB || ''; if('messageC' in s.messages) document.getElementById('message-c').value = s.messages.messageC || ''; }
-    }
-    function saveSettings(){ localStorage.setItem('clockSettings', JSON.stringify(collectSettings())); alert('設定を保存しました'); fetchWeather(); }
-    function loadSettings(){ var saved = localStorage.getItem('clockSettings'); if(saved){ try{ applySettings(JSON.parse(saved)); }catch(e){ console.error(e);} } }
-    function resetSettings(){ if(confirm('設定をデフォルトに戻しますか？')){ localStorage.removeItem('clockSettings'); location.reload(); } }
-    function toggleSettings(){ var p=document.getElementById('settings-panel'); p.style.display = (p.style.display==='none'||p.style.display==='')?'block':'none'; }
+        .top-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 50vh;
+            padding: 1vmin;
+        }
+        .date {
+            font-size: 5vmin;
+            font-weight: bold;
+            margin-bottom: 1vmin;
+            text-shadow: 2px 2px 5px rgba(0, 255, 0, 0.7);
+            color: lime;
+        }
+        .digital-clock {
+            font-size: 20vmin;
+            font-weight: bold;
+            text-shadow: 5px 5px 10px rgba(255, 255, 0, 0.5);
+            line-height: 1;
+        }
+        .period-display {
+            font-size: 7vmin;
+            margin-top: 1vmin;
+            color: white;
+            text-align: center;
+        }
+        .status-a { color: #7CFC00; }
+        .status-b { color: #ff6666; }
+        .bottom-section {
+            display: flex;
+            align-items: flex-start;
+            justify-content: flex-start;
+            padding: 2.5vmin;
+            height: 50vh;
+            font-size: 3.2vmin;
+            line-height: 1.45;
+            white-space: pre-line;
+            text-align: left;
+            overflow-y: auto;
+            width: 100%;
+            color: white;
+        }
+        .top-right-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            z-index: 1100;
+        }
+        button { font-size: 1.5vmin; padding: 0.6vmin; cursor: pointer; }
+        .settings-panel {
+            position: fixed;
+            top: 50px;
+            right: 10px;
+            background: #333;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+            width: min(520px, 95vw);
+            max-height: 85vh;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 0 15px rgba(255,255,255,0.25);
+        }
+        .settings-panel h3 { margin: 14px 0 8px; color: lime; }
+        .settings-panel p { font-size: 13px; line-height: 1.5; margin-bottom: 8px; }
+        .settings-panel label { display: block; margin: 7px 0 3px; font-size: 13px; }
+        .settings-panel input, .settings-panel textarea { width: 100%; margin: 2px 0 8px 0; padding: 5px; font-size: 13px; }
+        .settings-panel textarea { min-height: 120px; resize: vertical; font-family: inherit; }
+        .time-setting { display: flex; gap: 10px; align-items: center; margin: 5px 0; }
+        .time-setting input[type="time"] { width: 110px; }
+        .small { font-size: 12px; color: #ddd; }
+    </style>
+<script type="text/javascript" nonce="8ac6adedd8e74133810322a29de" src="//local.adguard.org?ts=1781223620667&amp;type=content-script&amp;dmn=chatgpt.com&amp;url=https%3A%2F%2Fchatgpt.com%2Fbackend-api%2Festuary%2Fcontent%3Fid%3Dfile_00000000d7f4720697c2d168a0c69e22%26fn%3D%25E5%25AE%259A%25E6%259C%259F%25E8%25A9%25A6%25E9%25A8%2593%25E9%2581%2585%25E5%2588%25BB%25E5%25AF%25BE%25E5%25BF%259C_%25E6%2596%25B0%25E6%2599%2582%25E7%25A8%258B%25E7%2589%2588_%25E5%25BF%2585%25E8%25A6%2581%25E3%2583%2591%25E3%2583%2595%25E3%2582%25A9%25E3%2583%25BC%25E3%2583%259E%25E3%2583%25B3%25E3%2582%25B9%25E8%25A1%25A8%25E7%25A4%25BA.html%26cd%3Dattachment%26ts%3D494784%26p%3Dfs%26cid%3D1%26sig%3D85a671236577e43b3e164850e216d15c18f20b4d6aae7c83d3b97eafeceb875f%26v%3D0&amp;app=com.microsoft.edgemac&amp;css=2&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1&amp;stealth=1&amp;st-push&amp;st-loc&amp;st-java&amp;st-dnt"></script><script type="text/javascript" nonce="8ac6adedd8e74133810322a29de" src="//local.adguard.org?ts=1781223620667&amp;name=AdGuard%20Extra&amp;type=user-script"></script></head>
+<body>
+    <div class="top-right-controls">
+        <button onclick="toggleManualMode()">手動モード切替</button>
+        <input type="time" id="manual-time" style="display: none;" onchange="updateManualTime()">
+        <button onclick="toggleSettings()">設定</button>
+    </div>
 
-    // ===== エクスポート（現在のドキュメントをベースに、デフォルト設定を埋め込んだHTMLをダウンロード） =====
-    function exportHtml(){
-      var s = collectSettings();
-      var html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML; // 現在のページをベースに
-      var inj = '<script>(function(){try{var k=\'clockSettings\';var v='+JSON.stringify(s)+';if(!localStorage.getItem(k)){localStorage.setItem(k, JSON.stringify(v));}}catch(e){}})();<\/script>';
-      // <body> 直後に注入（初回表示時にlocalStorageへ既定値を書き込む）
-      html = html.replace('<body>', '<body>'+inj);
-      var blob = new Blob([html], {type:'text/html'});
-      var a=document.createElement('a');
-      var ts = new Date(); var pad=function(n){return String(n).padStart(2,'0');};
-      var fname = 'clock_custom_'+(s.loc && s.loc.name ? s.loc.name : 'location')+'_'+ts.getFullYear()+pad(ts.getMonth()+1)+pad(ts.getDate())+'_'+pad(ts.getHours())+pad(ts.getMinutes())+pad(ts.getSeconds())+'.html';
-      a.href = URL.createObjectURL(blob); a.download = fname; document.body.appendChild(a); a.click(); setTimeout(function(){URL.revokeObjectURL(a.href); a.remove();},0);
-    }
+    <div class="settings-panel" id="settings-panel">
+        <h3>時程設定</h3>
+        <p>新しい時程に合わせています. HR 9:05〜9:10, 1限 9:20〜10:10, 2限 10:25〜11:15, 3限 11:30〜12:20, 昼休み 12:20〜12:50, 4限 12:55〜13:45. 試験開始から15分以内は「対応A」, 15分以降は「対応B」として表示します.</p>
+        <div>
+            <label>1時限目:</label>
+            <div class="time-setting">
+                <input type="time" id="period1-start" value="09:20">
+                <span>〜</span>
+                <input type="time" id="period1-end" value="10:10">
+            </div>
+            <label>2時限目:</label>
+            <div class="time-setting">
+                <input type="time" id="period2-start" value="10:25">
+                <span>〜</span>
+                <input type="time" id="period2-end" value="11:15">
+            </div>
+            <label>3時限目:</label>
+            <div class="time-setting">
+                <input type="time" id="period3-start" value="11:30">
+                <span>〜</span>
+                <input type="time" id="period3-end" value="12:20">
+            </div>
+            <label>4時限目:</label>
+            <div class="time-setting">
+                <input type="time" id="period4-start" value="12:55">
+                <span>〜</span>
+                <input type="time" id="period4-end" value="13:45">
+            </div>
+        </div>
 
-    // ===== 初期化 =====
-    loadSettings();
-    updateModeButton();
-    setInterval(updateClock, 1000); updateClock();
-    fetchWeather(); setInterval(fetchWeather, 10*60*1000);
-  </script>
+        <h3>遅刻判定</h3>
+        <label>対応Aとする遅刻時間の上限:</label>
+        <div class="time-setting">
+            <input type="number" id="late-limit" min="1" max="120" value="15">
+            <span>分以内</span>
+        </div>
+        <p class="small">例: 1限は9:20開始なので, 9:20〜9:34は対応A, 9:35以降は対応Bとして扱います.</p>
 
+        <h3>リアルタイム計算設定</h3>
+        <label>標準試験時間:</label>
+        <div class="time-setting">
+            <input type="number" id="standard-duration" min="1" max="240" value="50">
+            <span>分</span>
+        </div>
+        <p class="small">残り時間をa分として, 0.8 ÷ (a / 標準試験時間) を計算します. 標準試験時間50分で残り35分なら, 0.8 ÷ (35/50) = 114.3%, つまり14.3%増しです.</p>
 
+        <h3>対応A文章</h3>
+        <textarea id="message-a">対応A　遅刻15分以内
 
+直ちに教室に向かい, 受験してください.
 
-</body></html>
+受験カードは, 試験終了後に試験監督へ提出してください.</textarea>
+
+        <h3>対応B文章</h3>
+        <textarea id="message-b">対応B　遅刻15分以降
+
+欠席するか, 受験するかを選んでください.
+
+【欠席した場合の学期成績】
+1. 学期内の試験が1回のみの科目
+　平常点・実技点で評価します.
+
+2. 学期内の試験が2回ある科目
+　受験した試験の得点を利用し, 今回分の見込み点を算出します.
+　ただし, 公欠・出席停止以外の場合は80%がけになります.
+
+残り時間に応じて, 受験した場合にどれほどのパフォーマンスが必要かを画面上部にリアルタイム表示します.
+表示される「必要パフォーマンス」が100%を超えるほど, 通常より高い得点効率が必要です.</textarea>
+
+        <button onclick="saveSettings()">設定を保存</button>
+        <button onclick="resetSettings()">デフォルトに戻す</button>
+        <button onclick="toggleSettings()">閉じる</button>
+    </div>
+
+    <div class="top-section">
+        <div class="date" id="date-display"></div>
+        <div class="digital-clock" id="digital-clock"></div>
+        <div class="period-display" id="period-display"></div>
+        <div class="performance-display" id="performance-display"></div>
+    </div>
+
+    <div class="bottom-section" id="message-display"></div>
+
+    <script>
+        let manualMode = false;
+        let manualTime = null;
+
+        function toggleManualMode() {
+            manualMode = !manualMode;
+            document.getElementById('manual-time').style.display = manualMode ? 'inline' : 'none';
+            document.getElementById('date-display').style.display = manualMode ? 'none' : 'block';
+        }
+
+        function updateManualTime() {
+            const input = document.getElementById('manual-time').value;
+            if (input) {
+                const [hours, minutes] = input.split(':').map(Number);
+                manualTime = { hours, minutes };
+            }
+        }
+
+        function toggleSettings() {
+            const panel = document.getElementById('settings-panel');
+            panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function timeToMinutes(timeString) {
+            const [hours, minutes] = timeString.split(':').map(Number);
+            return hours * 60 + minutes;
+        }
+
+        function getCurrentTime() {
+            if (manualMode && manualTime) {
+                return new Date(2025, 0, 1, manualTime.hours, manualTime.minutes, 0);
+            }
+            return new Date();
+        }
+
+        function getLateLimit() {
+            const value = Number(document.getElementById('late-limit').value);
+            return Number.isFinite(value) && value > 0 ? value : 15;
+        }
+
+        function getStandardDuration() {
+            const value = Number(document.getElementById('standard-duration').value);
+            return Number.isFinite(value) && value > 0 ? value : 50;
+        }
+
+        function getPerformanceInfo(remainingExact) {
+            const standardDuration = getStandardDuration();
+            const a = Math.max(0, remainingExact);
+            if (a <= 0) {
+                return {
+                    remaining: 0,
+                    requiredPercent: Infinity,
+                    increasePercent: Infinity,
+                    text: '残り時間がありません.'
+                };
+            }
+
+            const requiredRatio = 0.8 / (a / standardDuration);
+            const requiredPercent = requiredRatio * 100;
+            const increasePercent = (requiredRatio - 1) * 100;
+            const remainingText = a.toFixed(1);
+            const requiredText = requiredPercent.toFixed(1);
+            const increaseText = increasePercent.toFixed(1);
+
+            return {
+                remaining: a,
+                requiredPercent,
+                increasePercent,
+                text: `残り時間 a=${remainingText}分 → 80%がけと釣り合う必要パフォーマンス ${requiredText}%（${increaseText}%増し）`
+            };
+        }
+
+        function getPeriodTimes() {
+            return [1, 2, 3, 4].map(num => ({
+                start: timeToMinutes(document.getElementById(`period${num}-start`).value),
+                end: timeToMinutes(document.getElementById(`period${num}-end`).value),
+                text: `${num}時限目試験中`,
+                number: num
+            }));
+        }
+
+        function updateClock() {
+            const now = getCurrentTime();
+            const year = now.getFullYear();
+            const month = now.getMonth() + 1;
+            const date = now.getDate();
+            const dayNames = ["日", "月", "火", "水", "木", "金", "土"];
+            const day = dayNames[now.getDay()];
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            const seconds = now.getSeconds();
+
+            if (!manualMode) {
+                document.getElementById("date-display").textContent =
+                    `${year}年 ${month.toString().padStart(2, '0')}月 ${date.toString().padStart(2, '0')}日 (${day}曜日)`;
+            }
+
+            document.getElementById("digital-clock").textContent =
+                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+            updateDisplay(now);
+        }
+
+        function currentMinutesExact(date) {
+            return date.getHours() * 60 + date.getMinutes() + date.getSeconds() / 60;
+        }
+
+        function minutesLabel(value) {
+            return Math.max(0, Math.ceil(value));
+        }
+
+        function updateDisplay(now) {
+            const periodDisplay = document.getElementById('period-display');
+            const performanceDisplay = document.getElementById('performance-display');
+            const messageDisplay = document.getElementById('message-display');
+            const timeExact = currentMinutesExact(now);
+            const timeMinute = now.getHours() * 60 + now.getMinutes();
+            const lateLimit = getLateLimit();
+            const periods = getPeriodTimes();
+            const period = periods.find(p => timeExact >= p.start && timeExact < p.end);
+
+            periodDisplay.classList.remove('status-a', 'status-b');
+
+            if (period) {
+                const elapsedExact = timeExact - period.start;
+                const remainingExact = period.end - timeExact;
+                const elapsedForDisplay = Math.floor(elapsedExact);
+                const remainingForDisplay = minutesLabel(remainingExact);
+                const performanceInfo = getPerformanceInfo(remainingExact);
+                const isA = elapsedExact < lateLimit;
+                performanceDisplay.textContent = performanceInfo.text;
+
+                if (isA) {
+                    periodDisplay.classList.add('status-a');
+                    periodDisplay.textContent = `${period.text} / 対応A / 開始から${elapsedForDisplay}分 / 終了まであと${remainingForDisplay}分`;
+                    messageDisplay.textContent = document.getElementById('message-a').value.trim();
+                } else {
+                    periodDisplay.classList.add('status-b');
+                    periodDisplay.textContent = `${period.text} / 対応B / 開始から${elapsedForDisplay}分 / 終了まであと${remainingForDisplay}分`;
+                    messageDisplay.textContent = document.getElementById('message-b').value.trim();
+                }
+                return;
+            }
+
+            const special = getSpecialStatus(timeMinute, periods);
+            periodDisplay.textContent = special.title;
+            performanceDisplay.textContent = '';
+            messageDisplay.textContent = special.message;
+        }
+
+        function getSpecialStatus(time, periods) {
+            // 固定表示: 画像の新時程に合わせたHR・予鈴・昼休み
+            const specials = [
+                { start: timeToMinutes('09:05'), end: timeToMinutes('09:10'), title: 'HR中', message: 'HR中です. 試験開始後の遅刻対応は, 各時限の開始時刻を基準に判定します.' },
+                { start: timeToMinutes('12:20'), end: timeToMinutes('12:50'), title: '昼休み中', message: '昼休み中です. 4限は12:55開始です.' },
+            ];
+            for (const s of specials) {
+                if (time >= s.start && time < s.end) return s;
+            }
+
+            for (const p of periods) {
+                const prepStart = p.start - 5;
+                if (time >= prepStart && time < p.start) {
+                    return {
+                        title: `${p.number}時限目 予鈴〜試験開始前`,
+                        message: `${p.number}時限目は${minutesToTime(p.start)}開始です. 試験開始後15分以内は対応A, 15分以降は対応Bです.`
+                    };
+                }
+            }
+
+            const nextPeriod = periods.find(p => time < p.start);
+            if (nextPeriod) {
+                return {
+                    title: `次は${nextPeriod.number}時限目 / ${minutesToTime(nextPeriod.start)}開始`,
+                    message: '現在は試験時間外です. 遅刻対応は, 試験開始後に判定します.'
+                };
+            }
+
+            return {
+                title: '本日の試験時程終了',
+                message: '本日の試験時程は終了しました.'
+            };
+        }
+
+        function minutesToTime(totalMinutes) {
+            const h = Math.floor(totalMinutes / 60).toString().padStart(2, '0');
+            const m = (totalMinutes % 60).toString().padStart(2, '0');
+            return `${h}:${m}`;
+        }
+
+        function saveSettings() {
+            const settings = {
+                periods: {
+                    period1: { start: document.getElementById('period1-start').value, end: document.getElementById('period1-end').value },
+                    period2: { start: document.getElementById('period2-start').value, end: document.getElementById('period2-end').value },
+                    period3: { start: document.getElementById('period3-start').value, end: document.getElementById('period3-end').value },
+                    period4: { start: document.getElementById('period4-start').value, end: document.getElementById('period4-end').value },
+                },
+                lateLimit: document.getElementById('late-limit').value,
+                standardDuration: document.getElementById('standard-duration').value,
+                messages: {
+                    messageA: document.getElementById('message-a').value,
+                    messageB: document.getElementById('message-b').value,
+                }
+            };
+            localStorage.setItem('clockSettingsV5', JSON.stringify(settings));
+            alert('設定を保存しました');
+        }
+
+        function loadSettings() {
+            const saved = localStorage.getItem('clockSettingsV5');
+            if (!saved) return;
+            try {
+                const settings = JSON.parse(saved);
+                if (settings.periods) {
+                    Object.keys(settings.periods).forEach(key => {
+                        document.getElementById(`${key}-start`).value = settings.periods[key].start;
+                        document.getElementById(`${key}-end`).value = settings.periods[key].end;
+                    });
+                }
+                if (settings.lateLimit) document.getElementById('late-limit').value = settings.lateLimit;
+                if (settings.standardDuration) document.getElementById('standard-duration').value = settings.standardDuration;
+                if (settings.messages) {
+                    document.getElementById('message-a').value = settings.messages.messageA || document.getElementById('message-a').value;
+                    document.getElementById('message-b').value = settings.messages.messageB || document.getElementById('message-b').value;
+                }
+            } catch (e) {
+                console.error('設定の読み込みに失敗しました', e);
+            }
+        }
+
+        function resetSettings() {
+            if (confirm('設定をデフォルトに戻しますか？')) {
+                localStorage.removeItem('clockSettingsV5');
+                localStorage.removeItem('clockSettingsV4');
+                localStorage.removeItem('clockSettingsV3');
+                localStorage.removeItem('clockSettings');
+                location.reload();
+            }
+        }
+
+        loadSettings();
+        setInterval(updateClock, 1000);
+        updateClock();
+    </script>
+</body>
+</html>
