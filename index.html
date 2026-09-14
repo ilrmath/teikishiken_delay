@@ -102,32 +102,39 @@
 
     <div class="settings-panel" id="settings-panel" style="display: none;">
         <h3>時程設定</h3>
-        <p>新しい時程に合わせています. HR 9:05〜9:10, 1限 9:20〜10:10, 2限 10:25〜11:15, 3限 11:30〜12:20, 昼休み 12:20〜12:50, 4限 12:55〜13:45. 試験開始から15分以内は「対応B」, 15分以降は「対応C」として表示します.</p>
+        <p>新しい時程に合わせています. HR 8:55〜9:00, 1限 9:10〜10:00, 2限 10:15〜11:05, 3限 11:20〜12:10, 昼休み 12:10〜12:40, 4限 12:45〜13:35. 試験開始から15分以内は「対応B」, 15分以降は「対応C」として表示します.</p>
         <div>
             <label>1時限目:</label>
             <div class="time-setting">
-                <input type="time" id="period1-start" value="09:20">
+                <input type="time" id="period1-start" value="09:10">
                 <span>〜</span>
-                <input type="time" id="period1-end" value="10:10">
+                <input type="time" id="period1-end" value="10:00">
             </div>
             <label>2時限目:</label>
             <div class="time-setting">
-                <input type="time" id="period2-start" value="10:25">
+                <input type="time" id="period2-start" value="10:15">
                 <span>〜</span>
-                <input type="time" id="period2-end" value="11:15">
+                <input type="time" id="period2-end" value="11:05">
             </div>
             <label>3時限目:</label>
             <div class="time-setting">
-                <input type="time" id="period3-start" value="11:30">
+                <input type="time" id="period3-start" value="11:20">
                 <span>〜</span>
-                <input type="time" id="period3-end" value="12:20">
+                <input type="time" id="period3-end" value="12:10">
             </div>
             <label>4時限目:</label>
             <div class="time-setting">
-                <input type="time" id="period4-start" value="12:55">
+                <input type="time" id="period4-start" value="12:45">
                 <span>〜</span>
-                <input type="time" id="period4-end" value="13:45">
+                <input type="time" id="period4-end" value="13:35">
             </div>
+            <label>一括変更:</label>
+            <div class="time-setting">
+                <button onclick="shiftAllTimes(10)">10分繰り下げ</button>
+                <button onclick="shiftAllTimes(20)">20分繰り下げ</button>
+                <button onclick="shiftAllTimes(-10)">10分繰り上げ</button>
+            </div>
+            <p class="small">1〜4時限の開始・終了を一括でずらします. HR・予鈴・昼休みも連動します. 押しただけでは保存されないので, 確定するには「設定を保存」を押してください.</p>
         </div>
 
         <h3>遅刻判定</h3>
@@ -136,7 +143,7 @@
             <input type="number" id="late-limit" min="1" max="120" value="15">
             <span>分以内</span>
         </div>
-        <p class="small">例: 1限は9:20開始なので, 9:20〜9:34は対応B, 9:35以降は対応Cとして扱います.</p>
+        <p class="small">例: 1限は9:10開始なので, 9:10〜9:24は対応B, 9:25以降は対応Cとして扱います.</p>
 
         <h3>リアルタイム計算設定</h3>
         <label>標準試験時間:</label>
@@ -222,6 +229,18 @@
         function timeToMinutes(timeString) {
             const [hours, minutes] = timeString.split(':').map(Number);
             return hours * 60 + minutes;
+        }
+
+        function shiftAllTimes(deltaMinutes) {
+            [1, 2, 3, 4].forEach(num => {
+                ['start', 'end'].forEach(kind => {
+                    const el = document.getElementById(`period${num}-${kind}`);
+                    if (!el.value) return;
+                    const shifted = ((timeToMinutes(el.value) + deltaMinutes) % 1440 + 1440) % 1440;
+                    el.value = minutesToTime(shifted);
+                });
+            });
+            updateClock();
         }
 
         function getCurrentTime() {
@@ -347,10 +366,13 @@
         }
 
         function getSpecialStatus(time, periods) {
-            // 固定表示: 画像の新時程に合わせたHR・予鈴・昼休み
+            // HR・昼休みは1〜4時限の設定から自動計算する（一括繰り下げにも連動）
+            const firstStart = periods[0].start;
+            const lunchStart = periods[2].end;
+            const fourthStart = periods[3].start;
             const specials = [
-                { start: timeToMinutes('09:05'), end: timeToMinutes('09:10'), title: 'HR中', message: 'HR中です. 試験開始後の遅刻対応は, 各時限の開始時刻を基準に判定します.' },
-                { start: timeToMinutes('12:20'), end: timeToMinutes('12:50'), title: '昼休み中', message: '昼休み中です. 4限は12:55開始です.' },
+                { start: firstStart - 15, end: firstStart - 10, title: 'HR中', message: 'HR中です. 試験開始後の遅刻対応は, 各時限の開始時刻を基準に判定します.' },
+                { start: lunchStart, end: fourthStart - 5, title: '昼休み中', message: `昼休み中です. 4限は${minutesToTime(fourthStart)}開始です.` },
             ];
             for (const s of specials) {
                 if (time >= s.start && time < s.end) return s;
