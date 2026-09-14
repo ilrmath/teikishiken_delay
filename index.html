@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
+<!-- saved from url=(0044)https://ilrmath.github.io/teikishiken_delay/ -->
+<html lang="ja"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>定期試験 遅刻対応表示（必要パフォーマンス計算付き）</title>
     <style>
@@ -92,7 +92,7 @@
         .time-setting input[type="time"] { width: 110px; }
         .small { font-size: 12px; color: #ddd; }
     </style>
-<script type="text/javascript" nonce="8ac6adedd8e74133810322a29de" src="//local.adguard.org?ts=1781223620667&amp;type=content-script&amp;dmn=chatgpt.com&amp;url=https%3A%2F%2Fchatgpt.com%2Fbackend-api%2Festuary%2Fcontent%3Fid%3Dfile_00000000d7f4720697c2d168a0c69e22%26fn%3D%25E5%25AE%259A%25E6%259C%259F%25E8%25A9%25A6%25E9%25A8%2593%25E9%2581%2585%25E5%2588%25BB%25E5%25AF%25BE%25E5%25BF%259C_%25E6%2596%25B0%25E6%2599%2582%25E7%25A8%258B%25E7%2589%2588_%25E5%25BF%2585%25E8%25A6%2581%25E3%2583%2591%25E3%2583%2595%25E3%2582%25A9%25E3%2583%25BC%25E3%2583%259E%25E3%2583%25B3%25E3%2582%25B9%25E8%25A1%25A8%25E7%25A4%25BA.html%26cd%3Dattachment%26ts%3D494784%26p%3Dfs%26cid%3D1%26sig%3D85a671236577e43b3e164850e216d15c18f20b4d6aae7c83d3b97eafeceb875f%26v%3D0&amp;app=com.microsoft.edgemac&amp;css=2&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1&amp;stealth=1&amp;st-push&amp;st-loc&amp;st-java&amp;st-dnt"></script><script type="text/javascript" nonce="8ac6adedd8e74133810322a29de" src="//local.adguard.org?ts=1781223620667&amp;name=AdGuard%20Extra&amp;type=user-script"></script></head>
+</head>
 <body>
     <div class="top-right-controls">
         <button onclick="toggleManualMode()">手動モード切替</button>
@@ -100,9 +100,9 @@
         <button onclick="toggleSettings()">設定</button>
     </div>
 
-    <div class="settings-panel" id="settings-panel">
+    <div class="settings-panel" id="settings-panel" style="display: none;">
         <h3>時程設定</h3>
-        <p>新しい時程に合わせています. HR 9:05〜9:10, 1限 9:20〜10:10, 2限 10:25〜11:15, 3限 11:30〜12:20, 昼休み 12:20〜12:50, 4限 12:55〜13:45. 試験開始から15分以内は「対応A」, 15分以降は「対応B」として表示します.</p>
+        <p>新しい時程に合わせています. HR 9:05〜9:10, 1限 9:20〜10:10, 2限 10:25〜11:15, 3限 11:30〜12:20, 昼休み 12:20〜12:50, 4限 12:55〜13:45. 試験開始から15分以内は「対応B」, 15分以降は「対応C」として表示します.</p>
         <div>
             <label>1時限目:</label>
             <div class="time-setting">
@@ -131,12 +131,12 @@
         </div>
 
         <h3>遅刻判定</h3>
-        <label>対応Aとする遅刻時間の上限:</label>
+        <label>対応Bとする遅刻時間の上限:</label>
         <div class="time-setting">
             <input type="number" id="late-limit" min="1" max="120" value="15">
             <span>分以内</span>
         </div>
-        <p class="small">例: 1限は9:20開始なので, 9:20〜9:34は対応A, 9:35以降は対応Bとして扱います.</p>
+        <p class="small">例: 1限は9:20開始なので, 9:20〜9:34は対応B, 9:35以降は対応Cとして扱います.</p>
 
         <h3>リアルタイム計算設定</h3>
         <label>標準試験時間:</label>
@@ -146,15 +146,15 @@
         </div>
         <p class="small">残り時間をa分として, 0.8 ÷ (a / 標準試験時間) を計算します. 標準試験時間50分で残り35分なら, 0.8 ÷ (35/50) = 114.3%, つまり14.3%増しです.</p>
 
-        <h3>対応A文章</h3>
-        <textarea id="message-a">対応A　遅刻15分以内
+        <h3>対応B文章</h3>
+        <textarea id="message-a">対応B　遅刻15分以内
 
 直ちに教室に向かい, 受験してください.
 
 受験カードは, 試験終了後に試験監督へ提出してください.</textarea>
 
-        <h3>対応B文章</h3>
-        <textarea id="message-b">対応B　遅刻15分以降
+        <h3>対応C文章</h3>
+        <textarea id="message-b">対応C　遅刻15分以降
 
 欠席するか, 受験するかを選んでください.
 
@@ -175,13 +175,26 @@
     </div>
 
     <div class="top-section">
-        <div class="date" id="date-display"></div>
-        <div class="digital-clock" id="digital-clock"></div>
-        <div class="period-display" id="period-display"></div>
-        <div class="performance-display" id="performance-display"></div>
+        <div class="date" id="date-display" style="display: block;">2026年 09月 14日 (月曜日)</div>
+        <div class="digital-clock" id="digital-clock">09:58:38</div>
+        <div class="period-display status-b" id="period-display">1時限目試験中 / 対応C / 開始から28分 / 終了まであと22分</div>
+        <div class="performance-display" id="performance-display">残り時間 a=21.4分 → 80%がけと釣り合う必要パフォーマンス(得点の時間効率) 187.2%（87.2%増し）</div>
     </div>
 
-    <div class="bottom-section" id="message-display"></div>
+    <div class="bottom-section" id="message-display">対応C　遅刻15分以降
+
+欠席するか, 受験するかを選んでください.
+
+【欠席した場合の学期成績】
+1. 学期内の試験が1回のみの科目
+　平常点・実技点で評価します.
+
+2. 学期内の試験が2回ある科目
+　受験した試験の得点を利用し, 今回分の見込み点を算出します.
+　ただし, 公欠・出席停止以外の場合は80%がけになります.
+
+残り時間に応じて, 受験した場合にどれほどのパフォーマンスが必要かを画面上部にリアルタイム表示します.
+表示される「必要パフォーマンス(得点の時間効率)」が100%を超えるほど, 通常より高い得点効率が必要です.</div>
 
     <script>
         let manualMode = false;
@@ -317,11 +330,11 @@
 
                 if (isA) {
                     periodDisplay.classList.add('status-a');
-                    periodDisplay.textContent = `${period.text} / 対応A / 開始から${elapsedForDisplay}分 / 終了まで${remainingForDisplay}分`;
+                    periodDisplay.textContent = `${period.text} / 対応B / 開始から${elapsedForDisplay}分 / 終了まで${remainingForDisplay}分`;
                     messageDisplay.textContent = document.getElementById('message-a').value.trim();
                 } else {
                     periodDisplay.classList.add('status-b');
-                    periodDisplay.textContent = `${period.text} / 対応B / 開始から${elapsedForDisplay}分 / 終了まであと${remainingForDisplay}分`;
+                    periodDisplay.textContent = `${period.text} / 対応C / 開始から${elapsedForDisplay}分 / 終了まであと${remainingForDisplay}分`;
                     messageDisplay.textContent = document.getElementById('message-b').value.trim();
                 }
                 return;
@@ -348,7 +361,7 @@
                 if (time >= prepStart && time < p.start) {
                     return {
                         title: `${p.number}時限目 予鈴〜試験開始前`,
-                        message: `${p.number}時限目は${minutesToTime(p.start)}開始です. 試験開始後15分以内は対応A, 15分以降は対応Bです.`
+                        message: `${p.number}時限目は${minutesToTime(p.start)}開始です. 試験開始後15分以内は対応B, 15分以降は対応Cです.`
                     };
                 }
             }
@@ -428,5 +441,6 @@
         setInterval(updateClock, 1000);
         updateClock();
     </script>
-</body>
-</html>
+
+
+</body></html>
